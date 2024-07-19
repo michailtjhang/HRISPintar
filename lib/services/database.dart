@@ -1,34 +1,30 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class DatabaseMethods {
+class DatabaseService {
+  final String uid;
+
+  DatabaseService({required this.uid});
+
+  // Reference to the user's collection
+  CollectionReference get userCollection => FirebaseFirestore.instance.collection('Users').doc(uid).collection('Employee');
 
   // Create Employee Details
-  Future addEmployeeDetails(
-      Map<String, dynamic> employeeInfoMap, String Id) async {
-    return await FirebaseFirestore.instance
-        .collection("Employee")
-        .doc(Id)
-        .set(employeeInfoMap);
+  Future<DocumentReference> addEmployeeDetails(Map<String, dynamic> employeeInfoMap) async {
+    return await userCollection.add(employeeInfoMap);
   }
 
   // Read Employee Details
-  Future<Stream<QuerySnapshot>> getEmployeeDetails() async {
-    return await FirebaseFirestore.instance.collection("Employee").snapshots();
+  Stream<QuerySnapshot> getEmployeeDetails() {
+    return userCollection.snapshots();
   }
 
   // Update Employee Details
-  Future updateEmployeeDetails(
-      String Id, Map<String, dynamic> updateInfo) async {
-    return await FirebaseFirestore.instance
-        .collection("Employee")
-        .doc(Id)
-        .update(updateInfo);}
+  Future<void> updateEmployeeDetails(String docId, Map<String, dynamic> updateInfo) async {
+    return await userCollection.doc(docId).update(updateInfo);
+  }
 
   // Delete Employee Details
-  Future deleteEmployeeDetails(String Id) async {
-    return await FirebaseFirestore.instance
-        .collection("Employee")
-        .doc(Id)
-        .delete();
+  Future<void> deleteEmployeeDetails(String docId) async {
+    return await userCollection.doc(docId).delete();
   }
 }

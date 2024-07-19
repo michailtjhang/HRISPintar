@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:myapp/services/database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:random_string/random_string.dart';
 
 class Employee extends StatefulWidget {
@@ -11,13 +12,14 @@ class Employee extends StatefulWidget {
 }
 
 class _EmployeeState extends State<Employee> {
-// Suggested code may be subject to a license. Learn more: ~LicenseLog:2177953947.
   TextEditingController nameController = TextEditingController();
   TextEditingController ageController = TextEditingController();
   TextEditingController locationController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -130,33 +132,37 @@ class _EmployeeState extends State<Employee> {
               height: 30.0,
             ),
             Center(
-                child: ElevatedButton(
-                    onPressed: () async {
-                      String Id = randomAlphaNumeric(10);
-                      Map<String, dynamic> employeeInfoMap = {
-                        "Nama": nameController.text,
-                        "Umur": ageController.text,
-                        "Id": Id,
-                        "Lokasi": locationController.text
-                      };
-                      await DatabaseMethods()
-                          .addEmployeeDetails(employeeInfoMap, Id)
-                          .then((value) {
-                        Fluttertoast.showToast(
-                            msg: "Data Berhasil Ditambahkan",
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.CENTER,
-                            timeInSecForIosWeb: 1,
-                            backgroundColor: Colors.green,
-                            textColor: Colors.white,
-                            fontSize: 16.0);
-                      });
-                    },
-                    child: Text(
-                      "Tambah",
-                      style: TextStyle(
-                          fontSize: 20.0, fontWeight: FontWeight.bold),
-                    )))
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (user != null) {
+                    String id = randomAlphaNumeric(10);
+                    Map<String, dynamic> employeeInfoMap = {
+                      "Nama": nameController.text,
+                      "Umur": ageController.text,
+                      "Id": id,
+                      "Lokasi": locationController.text
+                    };
+                    await DatabaseService(uid: user.uid).addEmployeeDetails(employeeInfoMap).then((value) {
+                      Fluttertoast.showToast(
+                        msg: "Data Berhasil Ditambahkan",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.CENTER,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.green,
+                        textColor: Colors.white,
+                        fontSize: 16.0,
+                      );
+                      Navigator.pop(context);
+                    });
+                  }
+                },
+                child: Text(
+                  "Tambah",
+                  style: TextStyle(
+                      fontSize: 20.0, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
           ],
         ),
       ),
